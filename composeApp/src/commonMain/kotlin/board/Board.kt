@@ -130,7 +130,6 @@ class Board(
         val targetPiece = pieces.find { it.position == position }
 
         if (targetPiece != null) {
-            // Kiểm tra nếu ăn King thật (realPiece là King hoặc chính nó là King)
             val realTarget = targetPiece.realPiece ?: targetPiece
             if (realTarget is King) {
                 isGameOver = true
@@ -159,9 +158,17 @@ class Board(
     }
 
     private fun assignRandomPieces(pieces: List<Piece>, color: Piece.Color) {
-        // Tạo pool quân thật theo đúng số lượng cờ vua
+        // Tìm quân đang đứng ở vị trí King ban đầu → giữ nguyên là King, hiển thị luôn
+        val kingPiece = pieces.find { it is King }
+        kingPiece?.let {
+            it.realPiece = null      // chính nó là quân thật
+            it.isRevealed = true     // luôn hiển thị, không ẩn
+        }
+
+        // Random cho các quân còn lại (không gồm King)
+        val otherPieces = pieces.filter { it !is King }
+
         val pool = mutableListOf<Piece>().apply {
-            add(King(color, IntOffset(0, 0)))
             add(Queen(color, IntOffset(0, 0)))
             add(Rook(color, IntOffset(0, 0)))
             add(Rook(color, IntOffset(0, 0)))
@@ -172,7 +179,7 @@ class Board(
             repeat(8) { add(Pawn(color, IntOffset(0, 0))) }
         }.shuffled()
 
-        pieces.forEachIndexed { index, piece ->
+        otherPieces.forEachIndexed { index, piece ->
             piece.realPiece = pool[index]
         }
     }
